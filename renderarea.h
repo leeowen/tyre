@@ -29,6 +29,8 @@ private:
     QColor mBackgroundColor;
     QColor mShapeColor;
     ShapeType mShape;
+
+    QPointF compute_Standard_Ellipse(float t);
 };
 
 #endif // RENDERAREA_H

@@ -15,7 +15,11 @@ public:
     enum ShapeType{Origin,Stretch};
     void setShapeColor(QColor color){mShapeColor=color;} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
-    void setShape(ShapeType shape){mShape=shape;}
+    void setStretch(int stretch){mStretch=stretch;repaint();}
+    int getStretch()const{return mStretch;}
+    void setShape(ShapeType shape){mShape=shape;on_shape_changed();}
+    int getStep()const{return mStepCount;}
+    void setStep(int step){mStepCount=step;repaint();}
     ShapeType shape()const {return mShape;}
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
@@ -26,11 +30,14 @@ signals:
 public slots:
 
 private:
-    QColor mBackgroundColor;
+    QColor mBackgroundColor=QColor(255,255,255);
     QColor mShapeColor;
     ShapeType mShape;
+    int mStepCount=100;
+    int mStretch;
 
     QPointF compute_Standard_Ellipse(float t);
+    void on_shape_changed();
 };
 
 #endif // RENDERAREA_H

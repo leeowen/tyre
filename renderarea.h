@@ -13,9 +13,9 @@ public:
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;//Q_DECL_OVERRIDE is a preprocessor macro that expands to the C++11 keyword "override" if the project is built with the C++11 options on and the compiler supports it, or nothing otherwise. The "override" attribute allows the compiler to tell you when you try to overide a virtual function but get the function signature wrong.
     QSize sizeHint() const Q_DECL_OVERRIDE;
     enum ShapeType{Origin,Stretch};
-    void setShapeColor(QColor color){mShapeColor=color;} //setter
+    void setShapeColor(QColor color){mShapeColor=color;repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
-    void setStretch(int stretch){mStretch=stretch;repaint();}
+    void setStretch(int stretch){mStretch=stretch;}
     int getStretch()const{return mStretch;}
     void setShape(ShapeType shape){mShape=shape;on_shape_changed();}
     int getStep()const{return mStepCount;}

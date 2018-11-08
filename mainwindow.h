@@ -25,6 +25,8 @@ private slots:
 
     void on_stepSpinBox_valueChanged(int step);
 
+    void on_LineColorBtn_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include<QColorDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -40,4 +41,11 @@ void MainWindow::on_comboStretchPercentageBox_currentTextChanged(const QString &
 void MainWindow::on_stepSpinBox_valueChanged(int step)
 {
     this->ui->renderArea->setStep(step);
+}
+
+void MainWindow::on_LineColorBtn_clicked()
+{
+    //open a color picker dialogue
+    QColor color=QColorDialog::getColor(Qt::red,this,"Select Color");
+    ui->renderArea->setShapeColor(color);
 }

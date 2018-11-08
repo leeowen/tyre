@@ -1,7 +1,7 @@
 #include "renderarea.h"
 #include<math.h>
 
-RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mShapeColor(255,255,255)
+RenderArea::RenderArea(QWidget *parent) : QWidget(parent)
 {
 
 }

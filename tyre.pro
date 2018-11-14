@@ -36,6 +36,20 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
+INCLUDEPATH += "/usr/local/Cellar/eigen/3.3.4/include/eigen3" \
+                "/usr/local/Cellar/cgal/4.13/include" \
+                "/usr/local/Cellar/boost/1.68.0/include" \
+                "/usr/local/Cellar/gmp/6.1.2_2/include" \
+                "/usr/local/Cellar/mpfr/4.0.1/include"
+
+LIBS += -L/usr/local/Cellar/gmp/6.1.2_2/lib\
+        -lgmp \
+        -L/usr/local/Cellar/mpfr/4.0.1/lib\
+        -lmpfr \
+        -L/usr/local/Cellar/cgal/4.13/lib\
+        -lCGAL
+
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

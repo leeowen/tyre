@@ -2,7 +2,10 @@
 #define RENDERAREA_H
 
 #include <QWidget>
-#include<QPainter>
+#include <QPainter>
+#include <QPen>
+#include<Eigen/Core>
+#include<Eigen/Dense>
 
 class RenderArea : public QWidget
 {
@@ -13,10 +16,10 @@ public:
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;//Q_DECL_OVERRIDE is a preprocessor macro that expands to the C++11 keyword "override" if the project is built with the C++11 options on and the compiler supports it, or nothing otherwise. The "override" attribute allows the compiler to tell you when you try to overide a virtual function but get the function signature wrong.
     QSize sizeHint() const Q_DECL_OVERRIDE;
     enum ShapeType{Origin,Stretch};
-    void setShapeColor(QColor color){mShapeColor=color;repaint();} //setter
+    void setShapeColor(QColor color){mShapeColor=color;mPen.setColor(mShapeColor);repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
-    void setStretch(int stretch){mStretch=stretch;}
-    int getStretch()const{return mStretch;}
+    void setStretchPercentage(int stretch){mStretchPercentage=stretch;}
+    int getStretchPercentage()const{return mStretchPercentage;}
     void setShape(ShapeType shape){mShape=shape;on_shape_changed();}
     int getStep()const{return mStepCount;}
     void setStep(int step){mStepCount=step;repaint();}
@@ -30,14 +33,18 @@ signals:
 public slots:
 
 private:
-    QColor mBackgroundColor=QColor(255,255,255);
+    QColor mBackgroundColor;
     QColor mShapeColor;
     ShapeType mShape;
-    int mStepCount=100;
-    int mStretch;
+    int mStepCount;
+    int mStretchPercentage;
+    float mRadius,ks,kb;
+    QPen mPen;
 
     QPointF compute_Standard_Ellipse(float t);
     void on_shape_changed();
+    void stretch(QPainter &painter);
+    int ODEsolver(Eigen::MatrixXf &b);
 };
 
 #endif // RENDERAREA_H

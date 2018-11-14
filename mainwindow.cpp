@@ -32,8 +32,9 @@ void MainWindow::on_stretchBtn_clicked()
 
 void MainWindow::on_comboStretchPercentageBox_currentTextChanged(const QString &stretch)
 {
-    int percentage=stretch.toInt();
-    this->ui->renderArea->setStretch(percentage);
+    QStringList pieces = stretch.split( "%" );
+    int percentage=pieces[0].toInt();
+    this->ui->renderArea->setStretchPercentage(percentage);
 }
 
 

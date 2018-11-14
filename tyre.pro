@@ -36,6 +36,8 @@ HEADERS += \
 FORMS += \
         mainwindow.ui
 
+INCLUDEPATH += "/usr/local/Cellar/eigen/3.3.4/include/eigen3"
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

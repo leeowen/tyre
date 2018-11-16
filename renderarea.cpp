@@ -1,6 +1,5 @@
 #include "renderarea.h"
 #include<math.h>
-#include<QDebug>
 
 RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mBackgroundColor(255,255,255),mStepCount(100),mRadius(150),ks(1.0),kb(100.0)
 {
@@ -23,6 +22,7 @@ void RenderArea::on_shape_changed()
     switch(mShape){
     case Origin:
         setShapeColor(Qt::red);
+        cleanup();
         break;
     case Stretch:
         setShapeColor(Qt::green);
@@ -30,11 +30,11 @@ void RenderArea::on_shape_changed()
     }
 }
 
-QPointF RenderArea::compute_Standard_Ellipse(float t)
+Point RenderArea::compute_Standard_Ellipse(float t)
 {
     float x=cos(t)*mRadius;
     float y=sin(t)*mRadius;
-    return QPointF(x,y);
+    return Point(x,y);
 }
 
 void RenderArea::stretch(QPainter &painter)
@@ -220,6 +220,11 @@ int RenderArea::ODEsolver(Eigen::MatrixXf &b)
     */
 }
 
+void RenderArea::cleanup()
+{
+    mTyre.clear();
+}
+
 void RenderArea::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
@@ -238,13 +243,47 @@ void RenderArea::paintEvent(QPaintEvent *event)
 
     switch (mShape) {
     case Origin:{
-        QPointF prevPoint=compute_Standard_Ellipse(0);
+        if(mTyre.is_empty())
+        {
+            for(float t=0;t<=intervalLength+step;t+=step)
+            {
+                Point point=compute_Standard_Ellipse(t);
+                mTyre.push_back(point);
+            }
+        }
+        break;
+    }
+    case Stretch:{
+        try {
+            if(mTyre.is_empty()) {
+               throw "Nothing to be stretched, press Origin first!";
+            }
+            stretch(painter);
+        } catch (const char* msg) {
+            QMessageBox msgBox;
+            msgBox.setText(msg);
+            msgBox.exec();
+        }
+
+        break;
+    }
+    default: {
+        break;
+    }
+    }
+
+
+    //assert (tyre.size()!=mStepCount);
+
+    //actual drawing
+    if (mShape==Origin or mShape==Stretch) {
+        Point prevPoint=mTyre.vertex(0);
         QPoint prevPixel;
         prevPixel.setX(prevPoint.x()+center.x());
         prevPixel.setY(prevPoint.y()+center.y());
-        for(float t=step;t<intervalLength+step;t+=step)
+        for(int i=1;i<mStepCount;i++)
         {
-            QPointF point=compute_Standard_Ellipse(t);
+            Point point=mTyre.vertex(i);
             QPoint pixel;
             pixel.setX(point.x()+center.x());
             pixel.setY(point.y()+center.y());
@@ -252,15 +291,5 @@ void RenderArea::paintEvent(QPaintEvent *event)
             painter.drawLine(pixel,prevPixel);
             prevPixel=pixel;
         }
-        break;
     }
-    case Stretch:{
-        stretch(painter);
-        break;
-    }
-    default:{
-        break;
-    }
-    }
-
 }

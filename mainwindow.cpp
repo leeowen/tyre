@@ -41,6 +41,13 @@ void MainWindow::on_comboStretchPercentageBox_currentTextChanged(const QString &
 
 void MainWindow::on_stepSpinBox_valueChanged(int step)
 {
+    if(step%2==1)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Step count has to be even number, find the nearest even number for you.");
+        msgBox.exec();
+        this->ui->stepSpinBox->setValue(step+1);
+    }
     this->ui->renderArea->setStep(step);
 }
 

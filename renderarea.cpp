@@ -50,174 +50,138 @@ void RenderArea::stretch(QPainter &painter)
         b(i,1)=-mRadius*sin(i*step);
     }
 
-    ODEsolver(b);
-    /*
-//  Cord length between two adjacent nodes
-    Lac=pi*d;
-    dL=sqrt((xi[1]-xi[0])*(xi[1]-xi[0])+(yi[1]-yi[0])*(yi[1]-yi[0]));
-    Lap=dL*2*N;
-    printf("Lap,Lac=%le %le\n",Lap,Lac);
-
-    int row=-1;
-
-    for(i=0;i<2*N;i++)
-    {
-        xi1[i]=xi[i]+x[i];
-//		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
-    }
-
-    y1=sqrt((d/2)*(d/2)*2-(d/2-delta0)*(d/2-delta0));
-// Same perimeter
-    Lap=1.0*Lap;
-    y1=1.164; //Lap=9.424398;Lap1=9.424397;
-
-//  103% of the original perimeter (Stetch by 5%)
-//	Lap=1.03*Lap;
-//    y1=1.2667;  //Lap=9.707122; Lap1=9.707103
-
-//  106% of the original perimeter (Stretch by 10%)
-//	Lap=1.06*Lap;
-//    y1=1.366713;  //Lap=9.989854; Lap1=9.989853;
-
-    delta0=(d/2)-y1;
-    deltaN=-delta0;
-    printf("delta0,deltaN= %le %le\n",delta0,deltaN);
-    ODEsolver(N,h4,a1,a2,kb,ks,delta0,deltaN,y);
-    for(i=0;i<N/2;i++)
-    {
-        yi1[i]=yi[i]+y[i+3*N/2];
-//		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
-    }
-    for(i=N/2;i<2*N;i++)
-    {
-        yi1[i]=yi[i]+y[i-N/2];
-//		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
-    }
-    Lap1=0.0;
-    for(i=1;i<2*N;i++)
-    {
-        Lap1=Lap1+sqrt((xi1[i]-xi1[i-1])*(xi1[i]-xi1[i-1])+(yi1[i]-yi1[i-1])*(yi1[i]-yi1[i-1]));
-    }
-    Lap1=Lap1+sqrt((xi1[0]-xi1[2*N-1])*(xi1[0]-xi1[2*N-1])+(yi1[0]-yi1[2*N-1])*(yi1[0]-yi1[2*N-1]));
-    printf("Lap,Lap1,y1= %le %le %le\n",Lap,Lap1,y1);
-}
-*/
-}
-
-
-int RenderArea::ODEsolver(Eigen::MatrixXf &b)
-{
-    int i,j,row;
+    int N=mStepCount/2;
     float delta0=-mRadius*2*mStretchPercentage*0.01;
     float deltaN=mRadius*2*mStretchPercentage*0.01;
+    Eigen::Vector2f x=ODEsolver(delta0,deltaN);
+
+    for(int i=0;i<mStepCount;i++)
+    {
+        b(i,0)=x(i);
+    }
+
+    b(0,0)=delta0;
+    b(N,0)=deltaN;
+
+    // traverse the vertices
+    int n=0;
+    for (Vertex_iterator vi = mTyre.vertices_begin(); vi != mTyre.vertices_end(); ++vi)
+    {
+        CGAL::Vector_2<R> d(b(n,0)-vi->x(),b(n,1)-vi->y());//d for displacement
+        CGAL::Aff_transformation_2<R> tsl(CGAL::TRANSLATION, d);
+        vi->transform(tsl) ;
+        n++;
+    }
+}
+
+
+Eigen::Vector2f RenderArea::ODEsolver(float delta0,float deltaN)
+{
+    int N=mStepCount/2;
     float h=1.0/mStepCount;
     float a1=6.0*kb-2.0*ks*h*h;
     float a2=4.0*kb+ks*h*h;
     float h4=h*h*h*h;
-    Eigen::MatrixXf aa(mStepCount,mStepCount);
+    Eigen::MatrixXf A(mStepCount,mStepCount);//solve the equation Ax=b
+    Eigen::MatrixXf x(mStepCount,1),b(mStepCount,1);//x is the displacement vector
 
-    row=-1;
+    int row=-1;
 // node 0 - Eq. (1)
     row=row+1;
-    aa(row,0)=-h4;
-    aa(row,1)=-a2;
-    aa(row,2)=kb;
-    aa(row,mStepCount-2)=kb;
-    aa(row,mStepCount-1)=-a2;
+    A(row,0)=-h4;
+    A(row,1)=-a2;
+    A(row,2)=kb;
+    A(row,mStepCount-2)=kb;
+    A(row,mStepCount-1)=-a2;
     b(row)=-a1*delta0;
 // node 1 - Eq. (2)
     row=row+1;
-    aa(row,1)=a1;
-    aa(row,2)=-a2;
-    aa(row,3)=kb;
-    aa(row,mStepCount-1)=kb;
+    A(row,1)=a1;
+    A(row,2)=-a2;
+    A(row,3)=kb;
+    A(row,mStepCount-1)=kb;
     b(row)=a2*delta0;
 // node 2 - Eq. (3)
     row=row+1;
-    aa(row,1)=-a2;
-    aa(row,2)=a1;
-    aa(row,3)=-a2;
-    aa(row,4)=kb;
+    A(row,1)=-a2;
+    A(row,2)=a1;
+    A(row,3)=-a2;
+    A(row,4)=kb;
     b(row)=-kb*delta0;
 // for the nodes between node 3 and node N-3 - Eq. (4)
-    for(i=3;i<=mStepCount/2-3;i++)
+    for(row=3;row<=N-3;row++)
     {
-        row=row+1;
-        aa(row,i-2)=kb;
-        aa(row,i-1)=-a2;
-        aa(row,i)=a1;
-        aa(row,i+1)=-a2;
-        aa(row,i+2)=kb;
+        A(row,row-2)=kb;
+        A(row,row-1)=-a2;
+        A(row,row)=a1;
+        A(row,row+1)=-a2;
+        A(row,row+2)=kb;
     }
-    /*
+
 // node N-2 - Eq. (5)
-    row=row+1;
-    aa[row][N-4]=kb;
-    aa[row][N-3]=-a2;
-    aa[row][N-2]=a1;
-    aa[row][N-1]=-a2;
-    bb[row]=-kb*deltaN;
+    row=N-2;
+    A(row,N-4)=kb;
+    A(row,N-3)=-a2;
+    A(row,N-2)=a1;
+    A(row,N-1)=-a2;
+    b(row)=-kb*deltaN;
 // node N-1 - Eq. (6)
     row=row+1;
-    aa[row][N-3]=kb;
-    aa[row][N-2]=-a2;
-    aa[row][N-1]=a1;
-    aa[row][N+1]=kb;
-    bb[row]=a2*deltaN;
+    A(row,N-3)=kb;
+    A(row,N-2)=-a2;
+    A(row,N-1)=a1;
+    A(row,N+1)=kb;
+    b(row)=a2*deltaN;
 // node N - Eq. (7)
     row=row+1;
-    aa[row][N-2]=kb;
-    aa[row][N-1]=-a2;
-    aa[row][N]=-h4;
-    aa[row][N+1]=-a2;
-    aa[row][N+2]=kb;
-    bb[row]=-a1*deltaN;
+    A(row,N-2)=kb;
+    A(row,N-1)=-a2;
+    A(row,N)=-h4;
+    A(row,N+1)=-a2;
+    A(row,N+2)=kb;
+    b(row)=-a1*deltaN;
 // node N+1 - Eq. (8)
     row=row+1;
-    aa[row][N-1]=kb;
-    aa[row][N+1]=a1;
-    aa[row][N+2]=-a2;
-    aa[row][N+3]=kb;
-    bb[row]=a2*deltaN;
+    A(row,N-1)=kb;
+    A(row,N+1)=a1;
+    A(row,N+2)=-a2;
+    A(row,N+3)=kb;
+    b(row)=a2*deltaN;
 // node N+2 - Eq. (9)
     row=row+1;
-    aa[row][N+1]=-a2;
-    aa[row][N+2]=a1;
-    aa[row][N+3]=-a2;
-    aa[row][N+4]=kb;
-    bb[row]=-kb*deltaN;
+    A(row,N+1)=-a2;
+    A(row,N+2)=a1;
+    A(row,N+3)=-a2;
+    A(row,N+4)=kb;
+    b(row)=-kb*deltaN;
 // for the nodes between node N+3 and node 2N-3 - Eq. (10)
-    for(i=N+3;i<=2*N-3;i++)
+    for(row=N+3;row<=mStepCount-3;row++)
     {
-        row=row+1;
-        aa[row][i-2]=kb;
-        aa[row][i-1]=-a2;
-        aa[row][i]=a1;
-        aa[row][i+1]=-a2;
-        aa[row][i+2]=kb;
+        A(row,row-2)=kb;
+        A(row,row-1)=-a2;
+        A(row,row)=a1;
+        A(row,row+1)=-a2;
+        A(row,row+2)=kb;
     }
 // node 2N-2 - Eq. (11)
-    row=row+1;
-    aa[row][2*N-4]=kb;
-    aa[row][2*N-3]=-a2;
-    aa[row][2*N-2]=a1;
-    aa[row][2*N-1]=-a2;
-    bb[row]=-kb*delta0;
+    row=mStepCount-2;
+    A(row,2*N-4)=kb;
+    A(row,2*N-3)=-a2;
+    A(row,2*N-2)=a1;
+    A(row,2*N-1)=-a2;
+    b(row)=-kb*delta0;
 // node 2N-1 - Eq. (12)
     row=row+1;
-    aa[row][1]=kb;
-    aa[row][2*N-3]=kb;
-    aa[row][2*N-2]=-a2;
-    aa[row][2*N-1]=a1;
-    bb[row]=a2*delta0;
-    ciggj(aa,200,bb);
-    for(i=0;i<200;i++)
-    {
-        x[i]=bb[i];
-    }
-    x[0]=delta0;
-    x[N]=deltaN;
-    */
+    A(row,1)=kb;
+    A(row,2*N-3)=kb;
+    A(row,2*N-2)=-a2;
+    A(row,2*N-1)=a1;
+    b(row)=a2*delta0;
+
+    //ciggj(aa,200,bb);
+    x = A.colPivHouseholderQr().solve(b);
+
+    return x;
 }
 
 void RenderArea::cleanup()
@@ -271,9 +235,6 @@ void RenderArea::paintEvent(QPaintEvent *event)
         break;
     }
     }
-
-
-    assert (mTyre.size()!=mStepCount);
 
     //actual drawing
     if (mShape==Origin or mShape==Stretch) {

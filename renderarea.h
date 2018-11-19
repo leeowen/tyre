@@ -22,7 +22,7 @@ typedef Traits::Point_2 Point;
 typedef QList<Point> Container;
 typedef CGAL::Polygon_2<Traits,Container> Polygon;
 typedef Container::iterator Vertex_iterator;
-
+//typedef Polygon_2::Vertex_iterator VertexIterator;
 
 class RenderArea : public QWidget
 {
@@ -63,7 +63,7 @@ private:
     void on_shape_changed();
 
     void stretch(QPainter &painter);
-    int ODEsolver(Eigen::MatrixXf &b);
+    Eigen::Vector2f ODEsolver(float delta0, float deltaN);
     Polygon mTyre;
 
 

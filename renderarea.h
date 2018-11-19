@@ -23,6 +23,11 @@ typedef QList<Point> Container;
 typedef CGAL::Polygon_2<Traits,Container> Polygon;
 typedef Container::iterator Vertex_iterator;
 //typedef Polygon_2::Vertex_iterator VertexIterator;
+#include <QPainter>
+#include <QPen>
+#include<Eigen/Core>
+#include<Eigen/Dense>
+
 
 class RenderArea : public QWidget
 {

@@ -26,6 +26,7 @@ void RenderArea::on_shape_changed()
         break;
     case Stretch:
         setShapeColor(Qt::green);
+        cleanup();
         break;
     }
 }
@@ -40,21 +41,23 @@ Point RenderArea::compute_Standard_Ellipse(float t)
 void RenderArea::stretch(QPainter &painter)
 {
     float step=2*M_PI/mStepCount;
-
+    mTyre.clear();
     Eigen::MatrixXf b(mStepCount,2);
-
 
     for(int i=0;i<mStepCount;i++)
     {
         b(i,0)=-mRadius*cos(i*step);
         b(i,1)=-mRadius*sin(i*step);
+        mTyre.push_back(Point(b(i,0),b(i,1)));
     }
 
     int N=mStepCount/2;
     float delta0=-mRadius*2*mStretchPercentage*0.01;
     float deltaN=mRadius*2*mStretchPercentage*0.01;
-    Eigen::Vector2f x=ODEsolver(delta0,deltaN);
+    Eigen::MatrixXf x=Eigen::MatrixXf::Zero(mStepCount,1);
 
+    x=ODEsolver(delta0,deltaN);
+    //std::cout<<x<<std::endl;
     for(int i=0;i<mStepCount;i++)
     {
         b(i,0)=x(i);
@@ -75,34 +78,35 @@ void RenderArea::stretch(QPainter &painter)
 }
 
 
-Eigen::Vector2f RenderArea::ODEsolver(float delta0,float deltaN)
+Eigen::MatrixXf RenderArea::ODEsolver(float delta0,float deltaN)
 {
     int N=mStepCount/2;
     float h=1.0/mStepCount;
     float a1=6.0*kb-2.0*ks*h*h;
     float a2=4.0*kb+ks*h*h;
     float h4=h*h*h*h;
-    Eigen::MatrixXf A(mStepCount,mStepCount);//solve the equation Ax=b
-    Eigen::MatrixXf x(mStepCount,1),b(mStepCount,1);//x is the displacement vector
+    Eigen::MatrixXf A=Eigen::MatrixXf::Zero(mStepCount,mStepCount);//solve the equation Ax=b
+    Eigen::MatrixXf x(mStepCount,1);//x is the unknown displacement vector
+    Eigen::MatrixXf b=Eigen::MatrixXf::Zero(mStepCount,1);
+    int row;
 
-    int row=-1;
 // node 0 - Eq. (1)
-    row=row+1;
+    row=0;
     A(row,0)=-h4;
     A(row,1)=-a2;
     A(row,2)=kb;
-    A(row,mStepCount-2)=kb;
-    A(row,mStepCount-1)=-a2;
+    A(row,2*N-2)=kb;
+    A(row,2*N-1)=-a2;
     b(row)=-a1*delta0;
 // node 1 - Eq. (2)
-    row=row+1;
+    row=1;
     A(row,1)=a1;
     A(row,2)=-a2;
     A(row,3)=kb;
-    A(row,mStepCount-1)=kb;
+    A(row,2*N-1)=kb;
     b(row)=a2*delta0;
 // node 2 - Eq. (3)
-    row=row+1;
+    row=2;
     A(row,1)=-a2;
     A(row,2)=a1;
     A(row,3)=-a2;
@@ -126,14 +130,14 @@ Eigen::Vector2f RenderArea::ODEsolver(float delta0,float deltaN)
     A(row,N-1)=-a2;
     b(row)=-kb*deltaN;
 // node N-1 - Eq. (6)
-    row=row+1;
+    row=N-1;
     A(row,N-3)=kb;
     A(row,N-2)=-a2;
     A(row,N-1)=a1;
     A(row,N+1)=kb;
     b(row)=a2*deltaN;
 // node N - Eq. (7)
-    row=row+1;
+    row=N;
     A(row,N-2)=kb;
     A(row,N-1)=-a2;
     A(row,N)=-h4;
@@ -141,21 +145,21 @@ Eigen::Vector2f RenderArea::ODEsolver(float delta0,float deltaN)
     A(row,N+2)=kb;
     b(row)=-a1*deltaN;
 // node N+1 - Eq. (8)
-    row=row+1;
+    row=N+1;
     A(row,N-1)=kb;
     A(row,N+1)=a1;
     A(row,N+2)=-a2;
     A(row,N+3)=kb;
     b(row)=a2*deltaN;
 // node N+2 - Eq. (9)
-    row=row+1;
+    row=N+2;
     A(row,N+1)=-a2;
     A(row,N+2)=a1;
     A(row,N+3)=-a2;
     A(row,N+4)=kb;
     b(row)=-kb*deltaN;
 // for the nodes between node N+3 and node 2N-3 - Eq. (10)
-    for(row=N+3;row<=mStepCount-3;row++)
+    for(row=N+3;row<=2*N-3;row++)
     {
         A(row,row-2)=kb;
         A(row,row-1)=-a2;
@@ -164,14 +168,14 @@ Eigen::Vector2f RenderArea::ODEsolver(float delta0,float deltaN)
         A(row,row+2)=kb;
     }
 // node 2N-2 - Eq. (11)
-    row=mStepCount-2;
+    row=2*N-2;
     A(row,2*N-4)=kb;
     A(row,2*N-3)=-a2;
     A(row,2*N-2)=a1;
     A(row,2*N-1)=-a2;
     b(row)=-kb*delta0;
 // node 2N-1 - Eq. (12)
-    row=row+1;
+    row=2*N-1;
     A(row,1)=kb;
     A(row,2*N-3)=kb;
     A(row,2*N-2)=-a2;
@@ -219,17 +223,7 @@ void RenderArea::paintEvent(QPaintEvent *event)
         break;
     }
     case Stretch:{
-        try {
-            if(mTyre.is_empty()) {
-               throw "Nothing to be stretched, press Origin first!";
-            }
-            stretch(painter);
-        } catch (const char* msg) {
-            QMessageBox msgBox;
-            msgBox.setText(msg);
-            msgBox.exec();
-        }
-
+        stretch(painter);
         break;
     }
     default: {

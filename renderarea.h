@@ -68,7 +68,7 @@ private:
     void on_shape_changed();
 
     void stretch(QPainter &painter);
-    Eigen::Vector2f ODEsolver(float delta0, float deltaN);
+    Eigen::MatrixXf ODEsolver(float delta0, float deltaN);
     Polygon mTyre;
 
 

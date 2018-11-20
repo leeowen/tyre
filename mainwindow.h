@@ -27,8 +27,11 @@ private slots:
 
     void on_LineColorBtn_clicked();
 
+    void on_actionSave_triggered();
+
 private:
     Ui::MainWindow *ui;
+    void saveFile(QString fileName);
 };
 
 #endif // MAINWINDOW_H

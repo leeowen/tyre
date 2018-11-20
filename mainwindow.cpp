@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include<QColorDialog>
+#include<QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -56,4 +57,33 @@ void MainWindow::on_LineColorBtn_clicked()
     //open a color picker dialogue
     QColor color=QColorDialog::getColor(Qt::red,this,"Select Color");
     ui->renderArea->setShapeColor(color);
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+    QString fileName=QFileDialog::getSaveFileName(
+                this,
+                "save",
+                "/Users");
+    if(!fileName.isEmpty()){
+        saveFile(fileName);
+    }
+}
+
+void MainWindow::saveFile(QString fileName)
+{
+    QFile file(fileName);
+    if(file.open(QIODevice::WriteOnly)){
+        QPixmap pixmap(this->ui->renderArea->size());
+        this->ui->renderArea->render(&pixmap);
+
+        pixmap.save(&file, "PNG");
+        file.close();
+    }
+    else{
+        QMessageBox::warning(
+                    this,
+                    "tyre",
+                    tr("Cannot write file %1.\nEroor:%2").arg(fileName).arg(file.errorString()));
+    }
 }

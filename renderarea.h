@@ -12,8 +12,8 @@
 #include <CGAL/basic.h>
 #include <CGAL/Cartesian.h>
 #include<Eigen/Core>
-#include<Eigen/Dense>
 #include<math.h>
+
 
 
 typedef CGAL::Cartesian<double> R;
@@ -68,7 +68,7 @@ private:
     void on_shape_changed();
 
     void stretch(QPainter &painter);
-    Eigen::MatrixXf ODEsolver(float delta0, float deltaN);
+    Eigen::MatrixXf ODEsolver(Eigen::Vector2f &delta0,Eigen::Vector2f &deltaN);
     Polygon mTyre;
 
 

@@ -42,43 +42,40 @@ void RenderArea::stretch(QPainter &painter)
 {
     float step=2*M_PI/mStepCount;
     mTyre.clear();
-    Eigen::MatrixXf b(mStepCount,2);
-
+    Polygon tmp;
     for(int i=0;i<mStepCount;i++)
     {
-        b(i,0)=-mRadius*cos(i*step);
-        b(i,1)=-mRadius*sin(i*step);
-        mTyre.push_back(Point(b(i,0),b(i,1)));
+        tmp.push_back(Point(-mRadius*cos(i*step),-mRadius*sin(i*step)));
     }
 
     int N=mStepCount/2;
-    float delta0=-mRadius*2*mStretchPercentage*0.01;
-    float deltaN=mRadius*2*mStretchPercentage*0.01;
-    Eigen::MatrixXf x=Eigen::MatrixXf::Zero(mStepCount,1);
-
+    Eigen::MatrixXf x=Eigen::MatrixXf::Zero(mStepCount,2);
+    Eigen::Vector2f delta0;
+    delta0(0)=-mRadius*2*mStretchPercentage*0.01;
+    delta0(1)=0;
+    Eigen::Vector2f deltaN;
+    deltaN(0)=mRadius*2*mStretchPercentage*0.01;
+    deltaN(1)=0;
     x=ODEsolver(delta0,deltaN);
-    //std::cout<<x<<std::endl;
-    for(int i=0;i<mStepCount;i++)
-    {
-        b(i,0)=x(i);
-    }
 
-    b(0,0)=delta0;
-    b(N,0)=deltaN;
+    x(0,0)=delta0(0);
+    x(0,1)=delta0(1);
+    x(N,0)=deltaN(0);
+    x(N,1)=deltaN(1);
 
     // traverse the vertices
     int n=0;
-    for (Vertex_iterator vi = mTyre.vertices_begin(); vi != mTyre.vertices_end(); ++vi)
+
+    for (Vertex_iterator vi = tmp.vertices_begin(); vi != tmp.vertices_end(); ++vi)
     {
-        CGAL::Vector_2<R> d(b(n,0)-vi->x(),b(n,1)-vi->y());//d for displacement
-        CGAL::Aff_transformation_2<R> tsl(CGAL::TRANSLATION, d);
-        vi->transform(tsl) ;
+        mTyre.push_back(Point(x(n,0)+vi->x(),x(n,1)+vi->y()));
         n++;
     }
+
 }
 
 
-Eigen::MatrixXf RenderArea::ODEsolver(float delta0,float deltaN)
+Eigen::MatrixXf RenderArea::ODEsolver(Eigen::Vector2f &delta0,Eigen::Vector2f &deltaN)
 {
     int N=mStepCount/2;
     float h=1.0/mStepCount;
@@ -86,8 +83,8 @@ Eigen::MatrixXf RenderArea::ODEsolver(float delta0,float deltaN)
     float a2=4.0*kb+ks*h*h;
     float h4=h*h*h*h;
     Eigen::MatrixXf A=Eigen::MatrixXf::Zero(mStepCount,mStepCount);//solve the equation Ax=b
-    Eigen::MatrixXf x(mStepCount,1);//x is the unknown displacement vector
-    Eigen::MatrixXf b=Eigen::MatrixXf::Zero(mStepCount,1);
+    Eigen::MatrixXf x(mStepCount,2);//x is the unknown displacement vector
+    Eigen::MatrixXf b=Eigen::MatrixXf::Zero(mStepCount,2);
     int row;
 
 // node 0 - Eq. (1)
@@ -97,21 +94,24 @@ Eigen::MatrixXf RenderArea::ODEsolver(float delta0,float deltaN)
     A(row,2)=kb;
     A(row,2*N-2)=kb;
     A(row,2*N-1)=-a2;
-    b(row)=-a1*delta0;
+    b(row,0)=-a1*delta0(0);
+    b(row,1)=-a1*delta0(1);
 // node 1 - Eq. (2)
     row=1;
     A(row,1)=a1;
     A(row,2)=-a2;
     A(row,3)=kb;
     A(row,2*N-1)=kb;
-    b(row)=a2*delta0;
+    b(row,0)=a2*delta0(0);
+    b(row,1)=a2*delta0(1);
 // node 2 - Eq. (3)
     row=2;
     A(row,1)=-a2;
     A(row,2)=a1;
     A(row,3)=-a2;
     A(row,4)=kb;
-    b(row)=-kb*delta0;
+    b(row,0)=-kb*delta0(0);
+    b(row,1)=-kb*delta0(1);
 // for the nodes between node 3 and node N-3 - Eq. (4)
     for(row=3;row<=N-3;row++)
     {
@@ -128,14 +128,16 @@ Eigen::MatrixXf RenderArea::ODEsolver(float delta0,float deltaN)
     A(row,N-3)=-a2;
     A(row,N-2)=a1;
     A(row,N-1)=-a2;
-    b(row)=-kb*deltaN;
+    b(row,0)=-kb*deltaN(0);
+    b(row,1)=-kb*deltaN(1);
 // node N-1 - Eq. (6)
     row=N-1;
     A(row,N-3)=kb;
     A(row,N-2)=-a2;
     A(row,N-1)=a1;
     A(row,N+1)=kb;
-    b(row)=a2*deltaN;
+    b(row,0)=a2*deltaN(0);
+    b(row,1)=a2*deltaN(1);
 // node N - Eq. (7)
     row=N;
     A(row,N-2)=kb;
@@ -143,21 +145,24 @@ Eigen::MatrixXf RenderArea::ODEsolver(float delta0,float deltaN)
     A(row,N)=-h4;
     A(row,N+1)=-a2;
     A(row,N+2)=kb;
-    b(row)=-a1*deltaN;
+    b(row,0)=-a1*deltaN(0);
+    b(row,1)=-a1*deltaN(1);
 // node N+1 - Eq. (8)
     row=N+1;
     A(row,N-1)=kb;
     A(row,N+1)=a1;
     A(row,N+2)=-a2;
     A(row,N+3)=kb;
-    b(row)=a2*deltaN;
+    b(row,0)=a2*deltaN(0);
+    b(row,1)=a2*deltaN(1);
 // node N+2 - Eq. (9)
     row=N+2;
     A(row,N+1)=-a2;
     A(row,N+2)=a1;
     A(row,N+3)=-a2;
     A(row,N+4)=kb;
-    b(row)=-kb*deltaN;
+    b(row,0)=-kb*deltaN(0);
+    b(row,1)=-kb*deltaN(1);
 // for the nodes between node N+3 and node 2N-3 - Eq. (10)
     for(row=N+3;row<=2*N-3;row++)
     {
@@ -173,17 +178,19 @@ Eigen::MatrixXf RenderArea::ODEsolver(float delta0,float deltaN)
     A(row,2*N-3)=-a2;
     A(row,2*N-2)=a1;
     A(row,2*N-1)=-a2;
-    b(row)=-kb*delta0;
+    b(row,0)=-kb*delta0(0);
+    b(row,1)=-kb*delta0(1);
 // node 2N-1 - Eq. (12)
     row=2*N-1;
     A(row,1)=kb;
     A(row,2*N-3)=kb;
     A(row,2*N-2)=-a2;
     A(row,2*N-1)=a1;
-    b(row)=a2*delta0;
+    b(row,0)=a2*delta0(0);
+    b(row,1)=a2*delta0(1);
 
     //ciggj(aa,200,bb);
-    x = A.colPivHouseholderQr().solve(b);
+    x = A.lu().solve(b);
 
     return x;
 }

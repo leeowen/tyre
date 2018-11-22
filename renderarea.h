@@ -68,10 +68,11 @@ private:
 
     Point compute_Standard_Ellipse(float t);
     void on_shape_changed();
-    float perimeter(Polygon &tmp,Eigen::MatrixXf &x);
+    float perimeter(Polygon &tmp);
+    Polygon updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x);
 
     void stretch(QPainter &painter);
-    Eigen::MatrixXf ODEsolver(Eigen::Vector2f &delta0,Eigen::Vector2f &deltaN);
+    Eigen::VectorXf ODEsolver(float delta0,float deltaN);
     Polygon mTyre;
 
 

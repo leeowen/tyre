@@ -7,6 +7,7 @@
 #include<QMessageBox>
 #include<QDebug>
 #include <QList>
+#include<QListIterator>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_traits_2.h>
 #include <CGAL/basic.h>
@@ -21,8 +22,9 @@ typedef CGAL::Polygon_traits_2<R> Traits;
 typedef Traits::Point_2 Point;
 typedef QList<Point> Container;
 typedef CGAL::Polygon_2<Traits,Container> Polygon;
-typedef Container::iterator Vertex_iterator;
-//typedef Polygon_2::Vertex_iterator VertexIterator;
+//typedef Container::iterator Vertex_iterator;
+typedef Polygon::Vertex_iterator Vertex_iterator;
+//typedef QListIterator<Point> Vertex_iterator;
 #include <QPainter>
 #include <QPen>
 #include<Eigen/Core>
@@ -66,6 +68,7 @@ private:
 
     Point compute_Standard_Ellipse(float t);
     void on_shape_changed();
+    float perimeter(Polygon &tmp,Eigen::MatrixXf &x);
 
     void stretch(QPainter &painter);
     Eigen::MatrixXf ODEsolver(Eigen::Vector2f &delta0,Eigen::Vector2f &deltaN);

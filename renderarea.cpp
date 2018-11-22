@@ -38,6 +38,26 @@ Point RenderArea::compute_Standard_Ellipse(float t)
     return Point(x,y);
 }
 
+float RenderArea::perimeter(Polygon &tmp,Eigen::MatrixXf &x)
+{
+    float Lap=0;
+    int i=0;
+    Vertex_iterator vn;
+    for(Vertex_iterator vi=tmp.vertices_begin();vi!=tmp.vertices_end();++vi){
+        vn=vi;
+        if(vi!=tmp.vertices_begin())
+        {
+            float dL=sqrt(pow((vn->x()-vi->x()),2)+pow((vn->y()-vi->y()),2));//  Cord length between two adjacent node
+            Lap+=dL;
+        }
+        i++;
+    }
+    Vertex_iterator vi=tmp.vertices_begin();
+    float dL=sqrt(pow((vn->x()-vi->x()),2)+pow((vn->y()-vi->y()),2));//  Cord length between two adjacent node
+    Lap+=dL;
+    return Lap;
+}
+
 void RenderArea::stretch(QPainter &painter)
 {
     float step=2*M_PI/mStepCount;
@@ -62,6 +82,51 @@ void RenderArea::stretch(QPainter &painter)
     x(0,1)=delta0(1);
     x(N,0)=deltaN(0);
     x(N,1)=deltaN(1);
+
+    float Lac=M_PI*mRadius*2;//perimeter
+    float Lap=perimeter(tmp,x);
+
+    //printf("Lap,Lac=%le %le\n",Lap,Lac);
+
+    float y1=sqrt((mRadius)*(mRadius)*2-(mRadius-delta0(0))*(mRadius-delta0(0)));
+    // Same perimeter
+//    while (Lap-Lac>0.001) {
+
+//    }
+
+//    Lap=1.0*Lap;
+//    y1=1.164; //Lap=9.424398;Lap1=9.424397;
+
+    //  103% of the original perimeter (Stetch by 5%)
+    //	Lap=1.03*Lap;
+    //    y1=1.2667;  //Lap=9.707122; Lap1=9.707103
+
+    //  106% of the original perimeter (Stretch by 10%)
+    //	Lap=1.06*Lap;
+    //    y1=1.366713;  //Lap=9.989854; Lap1=9.989853;
+
+//    delta0(1)=mRadius-y1;
+//    deltaN(1)=-delta0(1);
+//    // printf("delta0,deltaN= %le %le\n",delta0,deltaN);
+//    Eigen::MatrixXf y=ODEsolver(delta0,deltaN);
+
+//    for(i=0;i<N/2;i++)
+//    {
+//        yi1[i]=yi[i]+y[i+3*N/2];
+//        //		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
+//    }
+//    for(i=N/2;i<2*N;i++)
+//    {
+//        yi1[i]=yi[i]+y[i-N/2];
+//        //		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
+//    }
+//    Lap1=0.0;
+//    for(i=1;i<2*N;i++)
+//    {
+//        Lap1=Lap1+sqrt((xi1[i]-xi1[i-1])*(xi1[i]-xi1[i-1])+(yi1[i]-yi1[i-1])*(yi1[i]-yi1[i-1]));
+//    }
+//    Lap1=Lap1+sqrt((xi1[0]-xi1[2*N-1])*(xi1[0]-xi1[2*N-1])+(yi1[0]-yi1[2*N-1])*(yi1[0]-yi1[2*N-1]));
+//    printf("Lap,Lap1,y1= %le %le %le\n",Lap,Lap1,y1);
 
     // traverse the vertices
     int n=0;

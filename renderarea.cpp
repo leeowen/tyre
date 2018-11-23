@@ -92,10 +92,8 @@ void RenderArea::stretch(QPainter &painter)
     {
         tmp.push_back(Point(-mRadius*cos(i*step),-mRadius*sin(i*step)));
     }
-
     //float Lac=M_PI*mRadius*2;//perimeter
     float Lac=perimeter(tmp);//perimeter
-
     Eigen::VectorXf x=Eigen::VectorXf::Zero(mStepCount,1);
     Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
     float delta0,deltaN;
@@ -112,71 +110,35 @@ void RenderArea::stretch(QPainter &painter)
 
     float Lap=perimeter(tmp);
 
-    float a,b;
-    a=tmp.vertex(0).x();
-    b=tmp.vertex(N/2).y();
-    std::cout<<"a,b:"<<a<<", "<<b<<std::endl;
-    float y1;
-    // Same perimeter
-   int n=0;
-    while (n==0)
+    // Same perimeter: Lap=Lac,Lap appro equal to 4*(a-b)+2*M_PI*b
+    float a,b,precision;
+    precision=0.1;
+    a=fabs(tmp.vertex(0).x());
+    b=(Lac-4*a)/(-4+2*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
+    int n=0;
+    while (fabs(Lac-Lap)>precision && n<1000)
     {
-        std::cout<<"lac and lap:"<<Lac<<","<<Lap<<std::endl;
-        y1=sqrt((mRadius)*(mRadius)*2-a*b);
-        delta0=-y1;
-        deltaN=y1;
+        float y1=fabs(tmp.vertex(N/2).y())-b;
+        delta0=y1;
+        deltaN=-y1;
+        //std::cout<<delta0<<std::endl;
         Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
+        yy(0)=delta0;
+        yy(N)=deltaN;
         for(int i=0;i<N/2;i++)
         {
             y(i)=yy(i+3*N/2);
-            //		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
         }
         for(int i=N/2;i<2*N;i++)
         {
             y(i)=yy(i-N/2);
-            //		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
         }
         isXcoord=false;
         tmp=updateShape(tmp,isXcoord,y);
         Lap=perimeter(tmp);
-        b-=0.1;
+        b+=precision;
         n++;
-        std::cout<<"iteration:"<<n<<std::endl;
     }
-
-//    Lap=1.0*Lap;
-//    y1=1.164; //Lap=9.424398;Lap1=9.424397;
-
-    //  103% of the original perimeter (Stetch by 5%)
-    //	Lap=1.03*Lap;
-    //    y1=1.2667;  //Lap=9.707122; Lap1=9.707103
-
-    //  106% of the original perimeter (Stretch by 10%)
-    //	Lap=1.06*Lap;
-    //    y1=1.366713;  //Lap=9.989854; Lap1=9.989853;
-
-//    delta0(1)=mRadius-y1;
-//    deltaN(1)=-delta0(1);
-//    // printf("delta0,deltaN= %le %le\n",delta0,deltaN);
-//    Eigen::MatrixXf y=ODEsolver(delta0,deltaN);
-
-//    for(i=0;i<N/2;i++)
-//    {
-//        yi1[i]=yi[i]+y[i+3*N/2];
-//        //		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
-//    }
-//    for(i=N/2;i<2*N;i++)
-//    {
-//        yi1[i]=yi[i]+y[i-N/2];
-//        //		printf("%d %le %le %le\n",i,xi[i],x[i],xi1[i]);
-//    }
-//    Lap1=0.0;
-//    for(i=1;i<2*N;i++)
-//    {
-//        Lap1=Lap1+sqrt((xi1[i]-xi1[i-1])*(xi1[i]-xi1[i-1])+(yi1[i]-yi1[i-1])*(yi1[i]-yi1[i-1]));
-//    }
-//    Lap1=Lap1+sqrt((xi1[0]-xi1[2*N-1])*(xi1[0]-xi1[2*N-1])+(yi1[0]-yi1[2*N-1])*(yi1[0]-yi1[2*N-1]));
-//    printf("Lap,Lap1,y1= %le %le %le\n",Lap,Lap1,y1);
     n=0;
     for (Vertex_iterator vi = tmp.vertices_begin(); vi != tmp.vertices_end(); ++vi)
     {
@@ -354,5 +316,11 @@ void RenderArea::paintEvent(QPaintEvent *event)
             painter.drawLine(pixel,prevPixel);
             prevPixel=pixel;
         }
+        Point point=mTyre.vertex(0);
+        QPoint pixel;
+        pixel.setX(point.x()+center.x());
+        pixel.setY(point.y()+center.y());
+
+        painter.drawLine(pixel,prevPixel);
     }
 }

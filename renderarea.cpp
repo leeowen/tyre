@@ -92,8 +92,8 @@ void RenderArea::stretch(QPainter &painter)
     {
         tmp.push_back(Point(-mRadius*cos(i*step),-mRadius*sin(i*step)));
     }
-    //float Lac=M_PI*mRadius*2;//perimeter
-    float Lac=perimeter(tmp);//perimeter
+
+    float area0=tmp.area();
     Eigen::VectorXf x=Eigen::VectorXf::Zero(mStepCount,1);
     Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
     float delta0,deltaN;
@@ -108,17 +108,20 @@ void RenderArea::stretch(QPainter &painter)
     isXcoord=true;
     tmp=updateShape(tmp,isXcoord,x);
 
-    float Lap=perimeter(tmp);
+    float area1=tmp.area();
 
-    // Same perimeter: Lap=Lac,Lap appro equal to 4*(a-b)+2*M_PI*b
+    // Same area: area0=area1, area1 appro equal to a*b*M_PI
     float a,b,precision;
     precision=0.1;
     a=fabs(tmp.vertex(0).x());
-    b=(Lac-4*a)/(-4+2*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
+    b=area0/(a*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
+
     int n=0;
-    while (fabs(Lac-Lap)>precision && n<1000)
+    while ((area1-area0)>precision && n<200)
     {
+        std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
         float y1=fabs(tmp.vertex(N/2).y())-b;
+        std::cout<<"b:"<<b<<std::endl;
         delta0=y1;
         deltaN=-y1;
 
@@ -135,10 +138,11 @@ void RenderArea::stretch(QPainter &painter)
         }
         isXcoord=false;
         tmp=updateShape(tmp,isXcoord,y);
-        Lap=perimeter(tmp);
-
+        area1=tmp.area();
+        std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
         b+=precision;
         n++;
+        std::cout<<"iteration:"<<n<<std::endl;
     }
 
     n=0;

@@ -121,7 +121,7 @@ void RenderArea::stretch(QPainter &painter)
         float y1=fabs(tmp.vertex(N/2).y())-b;
         delta0=y1;
         deltaN=-y1;
-        //std::cout<<delta0<<std::endl;
+
         Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
         yy(0)=delta0;
         yy(N)=deltaN;
@@ -136,9 +136,11 @@ void RenderArea::stretch(QPainter &painter)
         isXcoord=false;
         tmp=updateShape(tmp,isXcoord,y);
         Lap=perimeter(tmp);
+
         b+=precision;
         n++;
     }
+
     n=0;
     for (Vertex_iterator vi = tmp.vertices_begin(); vi != tmp.vertices_end(); ++vi)
     {

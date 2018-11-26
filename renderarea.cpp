@@ -60,6 +60,16 @@ float RenderArea::perimeter(Polygon &tmp)
     return Lap;
 }
 
+void RenderArea::setStretchType(QString str)
+{
+    if (str=="Perimeter")
+        mStretchType=Perimeter;
+    else if (str=="Area")
+        mStretchType=Area;
+    else if (str=="Fixed Length")
+        mStretchType==Fixed;
+}
+
 Polygon RenderArea::updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x)
 {
     assert(!origin.is_empty() && "Input polygon is empty!");
@@ -82,6 +92,55 @@ Polygon RenderArea::updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x
     return tmp;
 }
 
+void RenderArea::stretchOnY(Polygon &tmp, float area0)
+{
+    int N=mStepCount/2;
+    Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
+    float a=fabs(tmp.vertex(0).x());
+    if (mStretchType==Area)
+    {
+        float area1=tmp.area();
+
+        // Same area: area0=area1, area1 appro equal to a*b*M_PI
+        float b,precision;
+        precision=0.1;
+        b=area0/(a*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
+
+        int n=0;
+        while ((area1-area0)>precision && n<200)
+        {
+            std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
+            float y1=fabs(tmp.vertex(N/2).y())-b;
+            std::cout<<"b:"<<b<<std::endl;
+            float delta0=y1;
+            float deltaN=-y1;
+
+            Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
+            yy(0)=delta0;
+            yy(N)=deltaN;
+            for(int i=0;i<N/2;i++)
+            {
+                y(i)=yy(i+3*N/2);
+            }
+            for(int i=N/2;i<2*N;i++)
+            {
+                y(i)=yy(i-N/2);
+            }
+            bool isXcoord=false;
+            tmp=updateShape(tmp,isXcoord,y);
+            area1=tmp.area();
+            std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
+            b+=precision;
+            n++;
+            std::cout<<"iteration:"<<n<<std::endl;
+        }
+    }
+    else if (mStretchType==Perimeter)
+    {
+
+    }
+}
+
 void RenderArea::stretch(QPainter &painter)
 {
     float step=2*M_PI/mStepCount;
@@ -95,11 +154,10 @@ void RenderArea::stretch(QPainter &painter)
 
     float area0=tmp.area();
     Eigen::VectorXf x=Eigen::VectorXf::Zero(mStepCount,1);
-    Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
     float delta0,deltaN;
     bool isXcoord;
-    delta0=-mRadius*2*mStretchPercentage*0.01;
-    deltaN=mRadius*2*mStretchPercentage*0.01;
+    delta0=-mRadius*0.05;
+    deltaN=mRadius*0.05;
     x=ODEsolver(delta0,deltaN);
 
     x(0)=delta0;
@@ -108,44 +166,9 @@ void RenderArea::stretch(QPainter &painter)
     isXcoord=true;
     tmp=updateShape(tmp,isXcoord,x);
 
-    float area1=tmp.area();
-
-    // Same area: area0=area1, area1 appro equal to a*b*M_PI
-    float a,b,precision;
-    precision=0.1;
-    a=fabs(tmp.vertex(0).x());
-    b=area0/(a*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
+    stretchOnY(tmp,delta0);
 
     int n=0;
-    while ((area1-area0)>precision && n<200)
-    {
-        std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
-        float y1=fabs(tmp.vertex(N/2).y())-b;
-        std::cout<<"b:"<<b<<std::endl;
-        delta0=y1;
-        deltaN=-y1;
-
-        Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
-        yy(0)=delta0;
-        yy(N)=deltaN;
-        for(int i=0;i<N/2;i++)
-        {
-            y(i)=yy(i+3*N/2);
-        }
-        for(int i=N/2;i<2*N;i++)
-        {
-            y(i)=yy(i-N/2);
-        }
-        isXcoord=false;
-        tmp=updateShape(tmp,isXcoord,y);
-        area1=tmp.area();
-        std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
-        b+=precision;
-        n++;
-        std::cout<<"iteration:"<<n<<std::endl;
-    }
-
-    n=0;
     for (Vertex_iterator vi = tmp.vertices_begin(); vi != tmp.vertices_end(); ++vi)
     {
         mTyre.push_back(Point(vi->x(),vi->y()));

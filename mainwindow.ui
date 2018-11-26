@@ -81,7 +81,7 @@
            <enum>Qt::LeftToRight</enum>
           </property>
           <property name="text">
-           <string>Stretch:</string>
+           <string>Type:</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -89,7 +89,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="comboStretchPercentageBox"/>
+         <widget class="QComboBox" name="comboStretchTypeBox"/>
         </item>
        </layout>
       </item>

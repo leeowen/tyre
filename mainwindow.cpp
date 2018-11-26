@@ -9,8 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     QStringList stretchLists;
-    stretchLists<< "5%" << "10%";
-    ui->comboStretchPercentageBox->addItems(stretchLists);
+    stretchLists<< "perimeter" << "area"<<"fixed length";
+    ui->comboStretchTypeBox->addItems(stretchLists);
     ui->stepSpinBox->setValue(ui->renderArea->getStep());
 }
 
@@ -31,11 +31,12 @@ void MainWindow::on_stretchBtn_clicked()
     this->ui->renderArea->repaint();
 }
 
-void MainWindow::on_comboStretchPercentageBox_currentTextChanged(const QString &stretch)
+void MainWindow::on_comboStretchTypeBox_currentTextChanged(const QString &str)
 {
-    QStringList pieces = stretch.split( "%" );
-    int percentage=pieces[0].toInt();
-    this->ui->renderArea->setStretchPercentage(percentage);
+//    QStringList pieces = stretch.split( "%" );
+//    int percentage=pieces[0].toInt();
+//    this->ui->renderArea->setStretchPercentage(percentage);
+    this->ui->renderArea->setStretchType(str);
 }
 
 

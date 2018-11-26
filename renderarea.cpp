@@ -108,38 +108,27 @@ void RenderArea::stretch(QPainter &painter)
     isXcoord=true;
     tmp=updateShape(tmp,isXcoord,x);
 
-    float Lap=perimeter(tmp);
 
-    // Same perimeter: Lap=Lac,Lap appro equal to 4*(a-b)+2*M_PI*b
-    float a,b,precision;
-    precision=0.1;
-    a=fabs(tmp.vertex(0).x());
-    b=(Lac-4*a)/(-4+2*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
     int n=0;
-    while (fabs(Lac-Lap)>precision && n<1000)
+    float b=108;
+
+    float y1=fabs(tmp.vertex(N/2).y())-b;
+    delta0=y1;
+    deltaN=-y1;
+
+    Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
+    yy(0)=delta0;
+    yy(N)=deltaN;
+    for(int i=0;i<N/2;i++)
     {
-        float y1=fabs(tmp.vertex(N/2).y())-b;
-        delta0=y1;
-        deltaN=-y1;
-
-        Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
-        yy(0)=delta0;
-        yy(N)=deltaN;
-        for(int i=0;i<N/2;i++)
-        {
-            y(i)=yy(i+3*N/2);
-        }
-        for(int i=N/2;i<2*N;i++)
-        {
-            y(i)=yy(i-N/2);
-        }
-        isXcoord=false;
-        tmp=updateShape(tmp,isXcoord,y);
-        Lap=perimeter(tmp);
-
-        b+=precision;
-        n++;
+        y(i)=yy(i+3*N/2);
     }
+    for(int i=N/2;i<2*N;i++)
+    {
+        y(i)=yy(i-N/2);
+    }
+    isXcoord=false;
+    tmp=updateShape(tmp,isXcoord,y);
 
     n=0;
     for (Vertex_iterator vi = tmp.vertices_begin(); vi != tmp.vertices_end(); ++vi)

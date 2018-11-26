@@ -75,7 +75,7 @@ private:
     Polygon updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x);
 
     void stretch(QPainter &painter);
-    void stretchOnY(Polygon &tmp, float area0);
+    void stretchOnY(Polygon &tmp);
     Eigen::VectorXf ODEsolver(float delta0,float deltaN);
     Polygon mTyre;
 

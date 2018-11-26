@@ -62,12 +62,14 @@ float RenderArea::perimeter(Polygon &tmp)
 
 void RenderArea::setStretchType(QString str)
 {
-    if (str=="Perimeter")
+    if (str=="perimeter")
         mStretchType=Perimeter;
-    else if (str=="Area")
+    else if (str=="area")
         mStretchType=Area;
-    else if (str=="Fixed Length")
-        mStretchType==Fixed;
+    else if (str=="fixed length")
+        mStretchType=Fixed;
+    qDebug()<<str;
+    std::cout<<mStretchType<<std::endl;
 }
 
 Polygon RenderArea::updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x)
@@ -92,13 +94,16 @@ Polygon RenderArea::updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x
     return tmp;
 }
 
-void RenderArea::stretchOnY(Polygon &tmp, float area0)
+void RenderArea::stretchOnY(Polygon &tmp)
 {
     int N=mStepCount/2;
     Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
     float a=fabs(tmp.vertex(0).x());
+    //std::cout<<mStretchType<<std::endl;
     if (mStretchType==Area)
     {
+        std::cout<<"mStretchType==Area"<<std::endl;
+        float area0=M_PI*mRadius*mRadius;
         float area1=tmp.area();
 
         // Same area: area0=area1, area1 appro equal to a*b*M_PI
@@ -109,7 +114,7 @@ void RenderArea::stretchOnY(Polygon &tmp, float area0)
         int n=0;
         while ((area1-area0)>precision && n<200)
         {
-            std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
+            //std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
             float y1=fabs(tmp.vertex(N/2).y())-b;
             std::cout<<"b:"<<b<<std::endl;
             float delta0=y1;
@@ -129,15 +134,47 @@ void RenderArea::stretchOnY(Polygon &tmp, float area0)
             bool isXcoord=false;
             tmp=updateShape(tmp,isXcoord,y);
             area1=tmp.area();
-            std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
+            //std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
             b+=precision;
             n++;
-            std::cout<<"iteration:"<<n<<std::endl;
+            //std::cout<<"iteration:"<<n<<std::endl;
         }
     }
     else if (mStretchType==Perimeter)
     {
+        //std::cout<<"mStretchType==Perimeter"<<std::endl;
+        float Lac=M_PI*mRadius*2;
+        float Lap=perimeter(tmp);
 
+        // Same perimeter: Lap=Lac,Lap appro equal to 4*(a-b)+2*M_PI*b
+        float b,precision;
+        precision=0.1;
+        b=(Lac-4*a)/(-4+2*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
+        int n=0;
+        while (fabs(Lac-Lap)>precision && n<1000)
+        {
+            float y1=fabs(tmp.vertex(N/2).y())-b;
+            float delta0=y1;
+            float deltaN=-y1;
+
+            Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
+            yy(0)=delta0;
+            yy(N)=deltaN;
+            for(int i=0;i<N/2;i++)
+            {
+                y(i)=yy(i+3*N/2);
+            }
+            for(int i=N/2;i<2*N;i++)
+            {
+                y(i)=yy(i-N/2);
+            }
+            bool isXcoord=false;
+            tmp=updateShape(tmp,isXcoord,y);
+            Lap=perimeter(tmp);
+
+            b+=precision;
+            n++;
+        }
     }
 }
 
@@ -152,7 +189,6 @@ void RenderArea::stretch(QPainter &painter)
         tmp.push_back(Point(-mRadius*cos(i*step),-mRadius*sin(i*step)));
     }
 
-    float area0=tmp.area();
     Eigen::VectorXf x=Eigen::VectorXf::Zero(mStepCount,1);
     float delta0,deltaN;
     bool isXcoord;
@@ -166,7 +202,7 @@ void RenderArea::stretch(QPainter &painter)
     isXcoord=true;
     tmp=updateShape(tmp,isXcoord,x);
 
-    stretchOnY(tmp,delta0);
+    stretchOnY(tmp);
 
     int n=0;
     for (Vertex_iterator vi = tmp.vertices_begin(); vi != tmp.vertices_end(); ++vi)

@@ -43,8 +43,8 @@ public:
     enum StretchType{Perimeter,Area,Fixed};
     void setShapeColor(QColor color){mShapeColor=color;mPen.setColor(mShapeColor);repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
-    void setStretchPercentage(int stretch){mStretchPercentage=stretch;}
-    int getStretchPercentage()const{return mStretchPercentage;}
+    void setStretchFixedLength(float length){mStretchFixedLength=length;repaint();}
+    int getStretchFixedLength()const{return mStretchFixedLength;}
     void setShape(ShapeType shape){mShape=shape;on_shape_changed();}
     int getStep()const{return mStepCount;}
     void setStep(int step){mStepCount=step;repaint();}
@@ -65,7 +65,7 @@ private:
     ShapeType mShape;
     StretchType mStretchType;
     int mStepCount;
-    int mStretchPercentage;
+    float mStretchFixedLength;
     float mRadius,ks,kb;
     QPen mPen;
 

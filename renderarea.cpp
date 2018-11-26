@@ -1,7 +1,7 @@
 #include "renderarea.h"
 #include<math.h>
 
-RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mBackgroundColor(255,255,255),mStepCount(100),mRadius(150),ks(1.0),kb(100.0)
+RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mBackgroundColor(255,255,255),mStepCount(100),mRadius(150),ks(1.0),kb(100.0),mStretchFixedLength(0.72)
 {
     mPen.setWidth(2);
     mPen.setColor(mShapeColor);
@@ -169,7 +169,8 @@ void RenderArea::stretchOnY(Polygon &tmp)
     }
     else if (mStretchType==Fixed)
     {
-        float b=108;
+        //standard: mRadius=150 b=108 --> mStretchFixedLength=0.72(default)
+        float b=mRadius*mStretchFixedLength;
 
         float y1=fabs(tmp.vertex(N/2).y())-b;
         float delta0=y1;

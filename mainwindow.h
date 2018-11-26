@@ -20,14 +20,15 @@ private slots:
 
     void on_stretchBtn_clicked();
 
-    void on_comboStretchPercentageBox_currentTextChanged(const QString &percentage);
-
+    void on_comboStretchTypeBox_currentTextChanged(const QString &str);
 
     void on_stepSpinBox_valueChanged(int step);
 
     void on_LineColorBtn_clicked();
 
     void on_actionSave_triggered();
+
+    void on_doubleSpinBox_valueChanged(double arg1);
 
 private:
     Ui::MainWindow *ui;

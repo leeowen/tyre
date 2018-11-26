@@ -40,15 +40,17 @@ public:
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;//Q_DECL_OVERRIDE is a preprocessor macro that expands to the C++11 keyword "override" if the project is built with the C++11 options on and the compiler supports it, or nothing otherwise. The "override" attribute allows the compiler to tell you when you try to overide a virtual function but get the function signature wrong.
     QSize sizeHint() const Q_DECL_OVERRIDE;
     enum ShapeType{Origin,Stretch};
+    enum StretchType{Perimeter,Area,Fixed};
     void setShapeColor(QColor color){mShapeColor=color;mPen.setColor(mShapeColor);repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
-    void setStretchPercentage(int stretch){mStretchPercentage=stretch;}
-    int getStretchPercentage()const{return mStretchPercentage;}
+    void setStretchFixedLength(float length){mStretchFixedLength=length;repaint();}
+    int getStretchFixedLength()const{return mStretchFixedLength;}
     void setShape(ShapeType shape){mShape=shape;on_shape_changed();}
     int getStep()const{return mStepCount;}
     void setStep(int step){mStepCount=step;repaint();}
     ShapeType shape()const {return mShape;}
     void cleanup();
+    void setStretchType(QString str);
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 
@@ -61,8 +63,9 @@ private:
     QColor mBackgroundColor;
     QColor mShapeColor;
     ShapeType mShape;
+    StretchType mStretchType;
     int mStepCount;
-    int mStretchPercentage;
+    float mStretchFixedLength;
     float mRadius,ks,kb;
     QPen mPen;
 
@@ -72,6 +75,7 @@ private:
     Polygon updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x);
 
     void stretch(QPainter &painter);
+    void stretchOnY(Polygon &tmp);
     Eigen::VectorXf ODEsolver(float delta0,float deltaN);
     Polygon mTyre;
 

@@ -9,8 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     QStringList stretchLists;
-    stretchLists<< "5%" << "10%";
-    ui->comboStretchPercentageBox->addItems(stretchLists);
+    stretchLists<< "perimeter" << "area"<<"fixed length";
+    ui->comboStretchTypeBox->addItems(stretchLists);
     ui->stepSpinBox->setValue(ui->renderArea->getStep());
 }
 
@@ -31,11 +31,22 @@ void MainWindow::on_stretchBtn_clicked()
     this->ui->renderArea->repaint();
 }
 
-void MainWindow::on_comboStretchPercentageBox_currentTextChanged(const QString &stretch)
+void MainWindow::on_comboStretchTypeBox_currentTextChanged(const QString &str)
 {
-    QStringList pieces = stretch.split( "%" );
-    int percentage=pieces[0].toInt();
-    this->ui->renderArea->setStretchPercentage(percentage);
+//    QStringList pieces = stretch.split( "%" );
+//    int percentage=pieces[0].toInt();
+
+    this->ui->renderArea->setStretchType(str);
+    if(str=="fixed length")
+    {
+        this->ui->lengthLabel->setEnabled(true);
+        this->ui->doubleSpinBox->setEnabled(true);
+    }
+    else
+    {
+        this->ui->lengthLabel->setEnabled(false);
+        this->ui->doubleSpinBox->setEnabled(false);
+    }
 }
 
 
@@ -86,4 +97,9 @@ void MainWindow::saveFile(QString fileName)
                     "tyre",
                     tr("Cannot write file %1.\nEroor:%2").arg(fileName).arg(file.errorString()));
     }
+}
+
+void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
+{
+    this->ui->renderArea->setStretchFixedLength(arg1);
 }

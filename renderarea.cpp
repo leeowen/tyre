@@ -68,8 +68,6 @@ void RenderArea::setStretchType(QString str)
         mStretchType=Area;
     else if (str=="fixed length")
         mStretchType=Fixed;
-    qDebug()<<str;
-    std::cout<<mStretchType<<std::endl;
 }
 
 Polygon RenderArea::updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x)
@@ -99,10 +97,8 @@ void RenderArea::stretchOnY(Polygon &tmp)
     int N=mStepCount/2;
     Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
     float a=fabs(tmp.vertex(0).x());
-    //std::cout<<mStretchType<<std::endl;
     if (mStretchType==Area)
     {
-        std::cout<<"mStretchType==Area"<<std::endl;
         float area0=M_PI*mRadius*mRadius;
         float area1=tmp.area();
 
@@ -114,9 +110,7 @@ void RenderArea::stretchOnY(Polygon &tmp)
         int n=0;
         while ((area1-area0)>precision && n<200)
         {
-            //std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
             float y1=fabs(tmp.vertex(N/2).y())-b;
-            std::cout<<"b:"<<b<<std::endl;
             float delta0=y1;
             float deltaN=-y1;
 
@@ -134,15 +128,12 @@ void RenderArea::stretchOnY(Polygon &tmp)
             bool isXcoord=false;
             tmp=updateShape(tmp,isXcoord,y);
             area1=tmp.area();
-            //std::cout<<"area0 and area1:"<<area0<<", "<<area1<<std::endl;
             b+=precision;
             n++;
-            //std::cout<<"iteration:"<<n<<std::endl;
         }
     }
     else if (mStretchType==Perimeter)
     {
-        //std::cout<<"mStretchType==Perimeter"<<std::endl;
         float Lac=M_PI*mRadius*2;
         float Lap=perimeter(tmp);
 
@@ -175,6 +166,28 @@ void RenderArea::stretchOnY(Polygon &tmp)
             b+=precision;
             n++;
         }
+    }
+    else if (mStretchType==Fixed)
+    {
+        float b=108;
+
+        float y1=fabs(tmp.vertex(N/2).y())-b;
+        float delta0=y1;
+        float deltaN=-y1;
+
+        Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
+        yy(0)=delta0;
+        yy(N)=deltaN;
+        for(int i=0;i<N/2;i++)
+        {
+            y(i)=yy(i+3*N/2);
+        }
+        for(int i=N/2;i<2*N;i++)
+        {
+            y(i)=yy(i-N/2);
+        }
+        bool isXcoord=false;
+        tmp=updateShape(tmp,isXcoord,y);
     }
 }
 

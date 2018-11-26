@@ -37,6 +37,10 @@ void MainWindow::on_comboStretchTypeBox_currentTextChanged(const QString &str)
 //    int percentage=pieces[0].toInt();
 //    this->ui->renderArea->setStretchPercentage(percentage);
     this->ui->renderArea->setStretchType(str);
+    if(str=="fixed length")
+    {
+
+    }
 }
 
 

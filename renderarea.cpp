@@ -21,11 +21,11 @@ void RenderArea::on_shape_changed()
 {
     switch(mShape){
     case Origin:
-        setShapeColor(Qt::red);
+        setShapeColor(Qt::green);
         cleanup();
         break;
     case Stretch:
-        setShapeColor(Qt::green);
+        setShapeColor(QColor(255,20,147));
         cleanup();
         break;
     }

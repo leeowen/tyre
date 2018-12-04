@@ -75,7 +75,8 @@ void MainWindow::on_actionSave_triggered()
     QString fileName=QFileDialog::getSaveFileName(
                 this,
                 "save",
-                "/Users");
+                "/Users",
+                "(*.png);;All Files (*)");
     if(!fileName.isEmpty()){
         saveFile(fileName);
     }

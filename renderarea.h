@@ -15,8 +15,6 @@
 #include<Eigen/Core>
 #include<math.h>
 
-
-
 typedef CGAL::Cartesian<double> R;
 typedef CGAL::Polygon_traits_2<R> Traits;
 typedef Traits::Point_2 Point;
@@ -33,7 +31,8 @@ typedef Polygon::Vertex_iterator Vertex_iterator;
 
 class RenderArea : public QWidget
 {
-    Q_OBJECT
+    Q_OBJECT//enable the use of signal and slot
+
 public:
     explicit RenderArea(QWidget *parent = nullptr);
 
@@ -51,6 +50,8 @@ public:
     ShapeType shape()const {return mShape;}
     void cleanup();
     void setStretchType(QString str);
+    void saveToMaya(QString fileName);
+
 protected:
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 

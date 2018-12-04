@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     stretchLists<< "perimeter" << "area"<<"fixed length";
     ui->comboStretchTypeBox->addItems(stretchLists);
     ui->stepSpinBox->setValue(ui->renderArea->getStep());
+    ui->renderArea->setCursor(Qt::CrossCursor);
 }
 
 MainWindow::~MainWindow()
@@ -103,4 +104,16 @@ void MainWindow::saveFile(QString fileName)
 void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
 {
     this->ui->renderArea->setStretchFixedLength(arg1);
+}
+
+void MainWindow::on_save_to_maya_clicked()
+{
+    QString fileName=QFileDialog::getSaveFileName(
+                this,
+                "save",
+                "/Users",
+                "(*.mel);;All Files (*)");
+    if(!fileName.isEmpty()){
+            this->ui->renderArea->saveToMaya(fileName);
+    }
 }

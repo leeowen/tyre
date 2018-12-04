@@ -403,3 +403,25 @@ void RenderArea::paintEvent(QPaintEvent *event)
         painter.drawLine(pixel,prevPixel);
     }
 }
+
+void RenderArea::saveToMaya(QString fileName)
+{
+    QFile file(fileName);
+    if(file.open(QIODevice::WriteOnly)){
+        QTextStream stream( &file );
+        stream << "curve -d 3" << endl;
+        for(int i=0;i<mStepCount;i++)
+        {
+            Point point=mTyre.vertex(i);
+            stream<<"-p "<<point.x()/100.0<<" "<<point.y()/100.0<<" "<<0.0<<endl;
+        }
+        stream << ";" << endl;
+        file.close();
+    }
+    else{
+        QMessageBox::warning(
+                    this,
+                    "tyre",
+                    tr("Cannot write file %1.\nEroor:%2").arg(fileName).arg(file.errorString()));
+    }
+}

@@ -62,7 +62,9 @@ float RenderArea::perimeter(Polygon &tmp)
 
 void RenderArea::setStretchType(QString str)
 {
-    if (str=="perimeter")
+    if (str=="ellipse")
+        mStretchType=Ellipse;
+    else if (str=="perimeter")
         mStretchType=Perimeter;
     else if (str=="area")
         mStretchType=Area;
@@ -97,7 +99,37 @@ void RenderArea::stretchOnY(Polygon &tmp)
     int N=mStepCount/2;
     Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
     float a=fabs(tmp.vertex(0).x());
-    if (mStretchType==Area)
+
+    if (mStretchType==Ellipse)
+    {
+        float Lac=M_PI*mRadius*2;
+        float Lap=perimeter(tmp);
+
+        //x*x/(a*a)+y*y/(b*b)=1    y=b*sqrt(1-x*x/(a*a))
+        float precision=0.1;
+        float b=fabs(tmp.vertex(N/2).y());
+        int n=0;
+
+        while ((Lap-Lac)>0 && n<600)
+        {
+            //qDebug()<<"Lac: "<<Lac<<" and Lap: "<<Lap<<endl;
+            for(int i=0;i<2*N;i++)
+            {
+                float x=tmp.vertex(i).x();
+                float yy=b*sqrt(1.0-x*x/(a*a));
+                if(i<=N)y[i]=-yy-tmp.vertex(i).y();
+                if(i>N)y[i]=yy-tmp.vertex(i).y();
+                //qDebug()<<"x: "<<x<<" and y: "<<y[i]<<endl;
+            }
+
+            bool isXcoord=false;
+            tmp=updateShape(tmp,isXcoord,y);
+            Lap=perimeter(tmp);
+            b-=precision;
+            n++;
+        }
+    }
+    else if (mStretchType==Area)
     {
         float area0=M_PI*mRadius*mRadius;
         float area1=tmp.area();
@@ -140,10 +172,12 @@ void RenderArea::stretchOnY(Polygon &tmp)
         // Same perimeter: Lap=Lac,Lap appro equal to 4*(a-b)+2*M_PI*b
         float b,precision;
         precision=0.1;
-        b=(Lac-4*a)/(-4+2*M_PI);//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
+        b=fabs(tmp.vertex(N/2).y());//(M_PI*mRadius-2*fabs(a))/(M_PI-2);
         int n=0;
-        while (fabs(Lac-Lap)>precision && n<1000)
+        while (Lap-Lac>0 && n<1000)
         {
+            qDebug()<<"a: "<<a<<" b: "<<b<<endl;
+            qDebug()<<"Lac: "<<Lac<<" and Lap: "<<Lap<<endl;
             float y1=fabs(tmp.vertex(N/2).y())-b;
             float delta0=y1;
             float deltaN=-y1;
@@ -163,7 +197,7 @@ void RenderArea::stretchOnY(Polygon &tmp)
             tmp=updateShape(tmp,isXcoord,y);
             Lap=perimeter(tmp);
 
-            b+=precision;
+            b-=precision;
             n++;
         }
     }
@@ -206,8 +240,8 @@ void RenderArea::stretch(QPainter &painter)
     Eigen::VectorXf x=Eigen::VectorXf::Zero(mStepCount,1);
     float delta0,deltaN;
     bool isXcoord;
-    delta0=-mRadius*0.05;
-    deltaN=mRadius*0.05;
+    delta0=-mRadius*0.2;
+    deltaN=mRadius*0.2;
     x=ODEsolver(delta0,deltaN);
 
     x(0)=delta0;

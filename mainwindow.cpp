@@ -3,13 +3,14 @@
 #include<QColorDialog>
 #include<QFileDialog>
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     QStringList stretchLists;
-    stretchLists<< "perimeter" << "area"<<"fixed length";
+    stretchLists<< "ellipse" << "perimeter" << "area" << "fixed length";
     ui->comboStretchTypeBox->addItems(stretchLists);
     ui->stepSpinBox->setValue(ui->renderArea->getStep());
     ui->renderArea->setCursor(Qt::CrossCursor);
@@ -76,7 +77,7 @@ void MainWindow::on_actionSave_triggered()
     QString fileName=QFileDialog::getSaveFileName(
                 this,
                 "save",
-                "/Users",
+                "../../",
                 "(*.png);;All Files (*)");
     if(!fileName.isEmpty()){
         saveFile(fileName);
@@ -111,7 +112,7 @@ void MainWindow::on_save_to_maya_clicked()
     QString fileName=QFileDialog::getSaveFileName(
                 this,
                 "save",
-                "/Users",
+                "",
                 "(*.mel);;All Files (*)");
     if(!fileName.isEmpty()){
             this->ui->renderArea->saveToMaya(fileName);

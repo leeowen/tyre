@@ -39,7 +39,7 @@ public:
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;//Q_DECL_OVERRIDE is a preprocessor macro that expands to the C++11 keyword "override" if the project is built with the C++11 options on and the compiler supports it, or nothing otherwise. The "override" attribute allows the compiler to tell you when you try to overide a virtual function but get the function signature wrong.
     QSize sizeHint() const Q_DECL_OVERRIDE;
     enum ShapeType{Origin,Stretch};
-    enum StretchType{Perimeter,Area,Fixed};
+    enum StretchType{Ellipse,Perimeter,Area,Fixed};
     void setShapeColor(QColor color){mShapeColor=color;mPen.setColor(mShapeColor);repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
     void setStretchFixedLength(float length){mStretchFixedLength=length;repaint();}
@@ -74,7 +74,6 @@ private:
     void on_shape_changed();
     float perimeter(Polygon &tmp);
     Polygon updateShape(Polygon& origin,bool isXcoord,Eigen::VectorXf &x);
-
     void stretch(QPainter &painter);
     void stretchOnY(Polygon &tmp);
     Eigen::VectorXf ODEsolver(float delta0,float deltaN);

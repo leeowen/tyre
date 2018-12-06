@@ -69,6 +69,7 @@ private:
     float mStretchFixedLength;
     float mRadius,ks,kb;
     QPen mPen;
+    QString mMelName;
 
     Point compute_Standard_Ellipse(float t);
     void on_shape_changed();

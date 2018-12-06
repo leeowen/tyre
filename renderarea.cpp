@@ -22,10 +22,32 @@ void RenderArea::on_shape_changed()
     switch(mShape){
     case Origin:
         setShapeColor(Qt::green);
+        mMelName="StandardCircle";
         cleanup();
         break;
     case Stretch:
-        setShapeColor(QColor(255,20,147));
+        switch (mStretchType) {
+        case Perimeter:{
+            mMelName="SamePerimeter";
+            setShapeColor(QColor(255,20,147));//pink
+            break;
+        }
+        case Area:{
+            mMelName="SameArea";
+            setShapeColor(Qt::yellow);
+            break;
+        }
+        case Ellipse:{
+            mMelName="EllipseSamePerimeter";
+            setShapeColor(Qt::blue);
+            break;
+        }
+        case Fixed:{
+            mMelName="StretchBy3Percent";
+            setShapeColor(QColor(150,150,150));//grey
+            break;
+        }
+        }
         cleanup();
         break;
     }
@@ -450,6 +472,9 @@ void RenderArea::saveToMaya(QString fileName)
             stream<<"-p "<<point.x()/100.0<<" "<<point.y()/100.0<<" "<<0.0<<endl;
         }
         stream << ";" << endl;
+        stream << "$curve = `ls -selection`;" << endl;
+        stream << "rename $curve "<<mMelName<<";" << endl;
+        //stream << "color -rgb 1 0 0 "<<getShapeColor()<<";" << endl;
         file.close();
     }
     else{

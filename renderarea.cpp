@@ -17,34 +17,43 @@ QSize RenderArea::sizeHint() const
     return QSize(800,600);
 }
 
+void RenderArea::setMelName(QString str)
+{
+    mMelName=str;
+}
+
 void RenderArea::on_shape_changed()
 {
     switch(mShape){
     case Origin:
         setShapeColor(Qt::green);
-        mMelName="StandardCircle";
+        setMelName("StandardCircle");
         cleanup();
         break;
     case Stretch:
         switch (mStretchType) {
         case Perimeter:{
-            mMelName="SamePerimeter";
+            setMelName("ODESamePerimeter");
             setShapeColor(QColor(255,20,147));//pink
             break;
         }
         case Area:{
-            mMelName="SameArea";
+            setMelName("SameArea");
             setShapeColor(Qt::yellow);
             break;
         }
         case Ellipse:{
-            mMelName="EllipseSamePerimeter";
+            setMelName("EllipseSamePerimeter");
             setShapeColor(Qt::blue);
             break;
         }
         case Fixed:{
-            mMelName="StretchBy3Percent";
-            setShapeColor(QColor(150,150,150));//grey
+            int percentage=roundf((mStretchFixedLength-1.0)*100.0);
+            setMelName("StretchBy"+QString::number(percentage)+"Percent");
+            int r = rand() % 255;
+            int g = rand() % 255;
+            int b = rand() % 255;
+            setShapeColor(QColor(r,g,b));//random
             break;
         }
         }

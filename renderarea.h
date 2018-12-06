@@ -43,13 +43,14 @@ public:
     void setShapeColor(QColor color){mShapeColor=color;mPen.setColor(mShapeColor);repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
     void setStretchFixedLength(float length){mStretchFixedLength=length;repaint();}
-    int getStretchFixedLength()const{return mStretchFixedLength;}
+    float getStretchFixedLength()const{return mStretchFixedLength;}
     void setShape(ShapeType shape){mShape=shape;on_shape_changed();}
     int getStep()const{return mStepCount;}
     void setStep(int step){mStepCount=step;repaint();}
     ShapeType shape()const {return mShape;}
     void cleanup();
     void setStretchType(QString str);
+    void setMelName(QString str);
     void saveToMaya(QString fileName);
 
 protected:

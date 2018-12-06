@@ -106,6 +106,8 @@ void MainWindow::saveFile(QString fileName)
 void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
 {
     this->ui->renderArea->setStretchFixedLength(arg1);
+    int percentage=(arg1-1)*100;
+    this->ui->renderArea->setMelName("StretchBy"+QString::number(percentage)+"Percent");
     int r = rand() % 255;
     int g = rand() % 255;
     int b = rand() % 255;

@@ -1,7 +1,7 @@
 #include "renderarea.h"
 #include<math.h>
 
-RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mBackgroundColor(255,255,255),mStepCount(100),mRadius(150),ks(1.0),kb(100.0),mStretchFixedLength(0.72)
+RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mBackgroundColor(255,255,255),mStepCount(100),mRadius(150),ks(1.0),kb(100.0)
 {
     mPen.setWidth(2);
     mPen.setColor(mShapeColor);
@@ -122,9 +122,13 @@ void RenderArea::stretchOnY(Polygon &tmp)
     Eigen::VectorXf y=Eigen::VectorXf::Zero(mStepCount,1);
     float a=fabs(tmp.vertex(0).x());
 
-    if (mStretchType==Ellipse)
+    if (mStretchType==Ellipse || mStretchType==Fixed)
     {
         float Lac=M_PI*mRadius*2;
+        if(mStretchType==Fixed)
+        {
+            Lac=Lac*mStretchFixedLength;
+        }
         float Lap=perimeter(tmp);
 
         //x*x/(a*a)+y*y/(b*b)=1    y=b*sqrt(1-x*x/(a*a))
@@ -198,8 +202,8 @@ void RenderArea::stretchOnY(Polygon &tmp)
         int n=0;
         while (Lap-Lac>0 && n<1000)
         {
-            qDebug()<<"a: "<<a<<" b: "<<b<<endl;
-            qDebug()<<"Lac: "<<Lac<<" and Lap: "<<Lap<<endl;
+            //qDebug()<<"a: "<<a<<" b: "<<b<<endl;
+            //qDebug()<<"Lac: "<<Lac<<" and Lap: "<<Lap<<endl;
             float y1=fabs(tmp.vertex(N/2).y())-b;
             float delta0=y1;
             float deltaN=-y1;
@@ -223,29 +227,29 @@ void RenderArea::stretchOnY(Polygon &tmp)
             n++;
         }
     }
-    else if (mStretchType==Fixed)
-    {
-        //standard: mRadius=150 b=108 --> mStretchFixedLength=0.72(default)
-        float b=mRadius*mStretchFixedLength;
+//    else if (mStretchType==Fixed)
+//    {
+//        //standard: mRadius=150 b=108 --> mStretchFixedLength=0.72(default)
+//        float b=mRadius*mStretchFixedLength;
 
-        float y1=fabs(tmp.vertex(N/2).y())-b;
-        float delta0=y1;
-        float deltaN=-y1;
+//        float y1=fabs(tmp.vertex(N/2).y())-b;
+//        float delta0=y1;
+//        float deltaN=-y1;
 
-        Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
-        yy(0)=delta0;
-        yy(N)=deltaN;
-        for(int i=0;i<N/2;i++)
-        {
-            y(i)=yy(i+3*N/2);
-        }
-        for(int i=N/2;i<2*N;i++)
-        {
-            y(i)=yy(i-N/2);
-        }
-        bool isXcoord=false;
-        tmp=updateShape(tmp,isXcoord,y);
-    }
+//        Eigen::VectorXf yy=ODEsolver(delta0,deltaN);
+//        yy(0)=delta0;
+//        yy(N)=deltaN;
+//        for(int i=0;i<N/2;i++)
+//        {
+//            y(i)=yy(i+3*N/2);
+//        }
+//        for(int i=N/2;i<2*N;i++)
+//        {
+//            y(i)=yy(i-N/2);
+//        }
+//        bool isXcoord=false;
+//        tmp=updateShape(tmp,isXcoord,y);
+//    }
 }
 
 void RenderArea::stretch(QPainter &painter)
@@ -474,7 +478,9 @@ void RenderArea::saveToMaya(QString fileName)
         stream << ";" << endl;
         stream << "$curve = `ls -selection`;" << endl;
         stream << "rename $curve "<<mMelName<<";" << endl;
-        //stream << "color -rgb 1 0 0 "<<getShapeColor()<<";" << endl;
+        QColor rgb=getShapeColor();
+        stream << "$curve = `ls -selection`;" << endl;
+        stream << "color -rgb "<<rgb.redF()<<" "<<rgb.greenF()<<" "<<rgb.blueF()<<" $curve;" << endl;
         file.close();
     }
     else{

@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboStretchTypeBox->addItems(stretchLists);
     ui->stepSpinBox->setValue(ui->renderArea->getStep());
     ui->renderArea->setCursor(Qt::CrossCursor);
+    ui->renderArea->setStretchFixedLength(ui->doubleSpinBox->value());
 }
 
 MainWindow::~MainWindow()
@@ -105,6 +106,10 @@ void MainWindow::saveFile(QString fileName)
 void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
 {
     this->ui->renderArea->setStretchFixedLength(arg1);
+    int r = rand() % 255;
+    int g = rand() % 255;
+    int b = rand() % 255;
+    this->ui->renderArea->setShapeColor(QColor(r,g,b));
 }
 
 void MainWindow::on_save_to_maya_clicked()

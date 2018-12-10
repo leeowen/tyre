@@ -32,6 +32,10 @@ private slots:
 
     void on_save_to_maya_clicked();
 
+    void on_a_axisSpinBox_valueChanged(int arg1);
+
+    void on_b_axisSpinBox_valueChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     void saveFile(QString fileName);

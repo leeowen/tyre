@@ -12,7 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QStringList stretchLists;
     stretchLists<< "ellipse" << "perimeter" << "area" << "fixed length";
     ui->comboStretchTypeBox->addItems(stretchLists);
-    ui->stepSpinBox->setValue(ui->renderArea->getStep());
+    ui->renderArea->setRadiusA(ui->a_axisSpinBox->value());
+    ui->renderArea->setRadiusB(ui->b_axisSpinBox->value());
+    ui->renderArea->setStep(ui->stepSpinBox->value());
     ui->renderArea->setCursor(Qt::CrossCursor);
     ui->renderArea->setStretchFixedLength(ui->doubleSpinBox->value());
 }
@@ -38,7 +40,6 @@ void MainWindow::on_comboStretchTypeBox_currentTextChanged(const QString &str)
 {
 //    QStringList pieces = stretch.split( "%" );
 //    int percentage=pieces[0].toInt();
-
     this->ui->renderArea->setStretchType(str);
     if(str=="fixed length")
     {
@@ -124,4 +125,14 @@ void MainWindow::on_save_to_maya_clicked()
     if(!fileName.isEmpty()){
             this->ui->renderArea->saveToMaya(fileName);
     }
+}
+
+void MainWindow::on_a_axisSpinBox_valueChanged(int arg1)
+{
+    this->ui->renderArea->setRadiusA(arg1);
+}
+
+void MainWindow::on_b_axisSpinBox_valueChanged(int arg1)
+{
+    this->ui->renderArea->setRadiusB(arg1);
 }

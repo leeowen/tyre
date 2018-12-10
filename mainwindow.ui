@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_5">
+   <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
      <widget class="RenderArea" name="renderArea" native="true">
       <property name="sizePolicy">
@@ -46,6 +46,51 @@
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="a_axisLabel">
+          <property name="text">
+           <string>a Axis</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="a_axisSpinBox">
+          <property name="minimum">
+           <number>150</number>
+          </property>
+          <property name="maximum">
+           <number>200</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="b_axisLabel">
+          <property name="text">
+           <string>b Axis:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="b_axisSpinBox">
+          <property name="minimum">
+           <number>100</number>
+          </property>
+          <property name="maximum">
+           <number>150</number>
+          </property>
+          <property name="value">
+           <number>150</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="QPushButton" name="originBtn">
@@ -161,7 +206,7 @@
         <item>
          <widget class="QSpinBox" name="stepSpinBox">
           <property name="minimum">
-           <number>20</number>
+           <number>100</number>
           </property>
           <property name="maximum">
            <number>300</number>

@@ -42,6 +42,10 @@ public:
     enum StretchType{Ellipse,Perimeter,Area,Fixed};
     void setShapeColor(QColor color){mShapeColor=color;mPen.setColor(mShapeColor);repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
+    void setRadiusA(int arg){mRadiusA=arg;repaint();}
+    void setRadiusB(int arg){mRadiusB=arg;repaint();}
+    int getRadiusA() const {return mRadiusA;}
+    int getRadiusB() const {return mRadiusB;}
     void setStretchFixedLength(float length){mStretchFixedLength=length;repaint();}
     float getStretchFixedLength()const{return mStretchFixedLength;}
     void setShape(ShapeType shape){mShape=shape;on_shape_changed();}
@@ -68,7 +72,7 @@ private:
     StretchType mStretchType;
     int mStepCount;
     float mStretchFixedLength;
-    float mRadiusA,mRadiusB,ks,kb;
+    float mRadiusA,mRadiusB,ks,kb,mRadius;
     QPen mPen;
     QString mMelName;
 
@@ -80,7 +84,6 @@ private:
     void stretchOnY(Polygon &tmp);
     Eigen::VectorXf ODEsolver(float delta0,float deltaN);
     Polygon mTyre;
-
 
 };
 

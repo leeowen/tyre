@@ -68,7 +68,7 @@ private:
     StretchType mStretchType;
     int mStepCount;
     float mStretchFixedLength;
-    float mRadius,ks,kb;
+    float mRadiusA,mRadiusB,ks,kb;
     QPen mPen;
     QString mMelName;
 

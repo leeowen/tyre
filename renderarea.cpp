@@ -1,7 +1,7 @@
 #include "renderarea.h"
 #include<math.h>
 
-RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mBackgroundColor(255,255,255),mStepCount(100),mRadius(150),ks(1.0),kb(100.0)
+RenderArea::RenderArea(QWidget *parent) : QWidget(parent),mBackgroundColor(255,255,255),mStepCount(100),mRadiusA(150),mRadiusB(150),ks(1.0),kb(100.0)
 {
     mPen.setWidth(2);
     mPen.setColor(mShapeColor);
@@ -64,8 +64,8 @@ void RenderArea::on_shape_changed()
 
 Point RenderArea::compute_Standard_Ellipse(float t)
 {
-    float x=cos(t)*mRadius;
-    float y=sin(t)*mRadius;
+    float x=mRadiusA*cos(t);
+    float y=mRadiusB*sin(t);
     return Point(x,y);
 }
 
@@ -133,7 +133,7 @@ void RenderArea::stretchOnY(Polygon &tmp)
 
     if (mStretchType==Ellipse || mStretchType==Fixed)
     {
-        float Lac=M_PI*mRadius*2;
+        float Lac=M_PI*mRadiusA*2;
         if(mStretchType==Fixed)
         {
             Lac=Lac*mStretchFixedLength;
@@ -166,7 +166,7 @@ void RenderArea::stretchOnY(Polygon &tmp)
     }
     else if (mStretchType==Area)
     {
-        float area0=M_PI*mRadius*mRadius;
+        float area0=M_PI*mRadiusA*mRadiusA;
         float area1=tmp.area();
 
         // Same area: area0=area1, area1 appro equal to a*b*M_PI
@@ -201,7 +201,7 @@ void RenderArea::stretchOnY(Polygon &tmp)
     }
     else if (mStretchType==Perimeter)
     {
-        float Lac=M_PI*mRadius*2;
+        float Lac=M_PI*mRadiusA*2;
         float Lap=perimeter(tmp);
 
         // Same perimeter: Lap=Lac,Lap appro equal to 4*(a-b)+2*M_PI*b
@@ -269,14 +269,14 @@ void RenderArea::stretch(QPainter &painter)
     Polygon tmp;
     for(int i=0;i<mStepCount;i++)
     {
-        tmp.push_back(Point(-mRadius*cos(i*step),-mRadius*sin(i*step)));
+        tmp.push_back(Point(-mRadiusA*cos(i*step),-mRadiusA*sin(i*step)));
     }
 
     Eigen::VectorXf x=Eigen::VectorXf::Zero(mStepCount,1);
     float delta0,deltaN;
     bool isXcoord;
-    delta0=-mRadius*0.2;
-    deltaN=mRadius*0.2;
+    delta0=-mRadiusA*0.2;
+    deltaN=mRadiusA*0.2;
     x=ODEsolver(delta0,deltaN);
 
     x(0)=delta0;

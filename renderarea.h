@@ -42,6 +42,10 @@ public:
     enum StretchType{Ellipse,Perimeter,Area,Fixed};
     void setShapeColor(QColor color){mShapeColor=color;mPen.setColor(mShapeColor);repaint();} //setter
     QColor getShapeColor() const {return mShapeColor;} //getter
+    void setKs(int arg){ks=arg;}
+    void setKb(int arg){kb=arg;}
+    int getks() const {return ks;}
+    int getKb() const {return kb;}
     void setRadiusA(int arg){mRadiusA=arg;repaint();}
     void setRadiusB(int arg){mRadiusB=arg;repaint();}
     int getRadiusA() const {return mRadiusA;}

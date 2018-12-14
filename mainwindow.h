@@ -36,6 +36,10 @@ private slots:
 
     void on_b_axisSpinBox_valueChanged(int arg1);
 
+    void on_ksSlider_valueChanged(int value);
+
+    void on_kbSlider_valueChanged(int value);
+
 private:
     Ui::MainWindow *ui;
     void saveFile(QString fileName);

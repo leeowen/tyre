@@ -14,6 +14,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->comboStretchTypeBox->addItems(stretchLists);
     ui->renderArea->setRadiusA(ui->a_axisSpinBox->value());
     ui->renderArea->setRadiusB(ui->b_axisSpinBox->value());
+    ui->renderArea->setKs(ui->ksSlider->value());
+    ui->ks_label->setText("ks: "+QString::number(ui->ksSlider->value()));
+    ui->renderArea->setKb(ui->kbSlider->value());
+    ui->kb_label->setText("kb: "+QString::number(ui->kbSlider->value()));
     ui->renderArea->setStep(ui->stepSpinBox->value());
     ui->renderArea->setCursor(Qt::CrossCursor);
     ui->renderArea->setStretchFixedLength(ui->doubleSpinBox->value());
@@ -135,4 +139,16 @@ void MainWindow::on_a_axisSpinBox_valueChanged(int arg1)
 void MainWindow::on_b_axisSpinBox_valueChanged(int arg1)
 {
     this->ui->renderArea->setRadiusB(arg1);
+}
+
+void MainWindow::on_ksSlider_valueChanged(int value)
+{
+    this->ui->renderArea->setKs(value);
+    this->ui->ks_label->setText("ks: "+QString::number(value));
+}
+
+void MainWindow::on_kbSlider_valueChanged(int value)
+{
+    this->ui->renderArea->setKb(value);
+    this->ui->kb_label->setText("kb: "+QString::number(value));
 }
